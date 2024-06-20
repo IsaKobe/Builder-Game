@@ -1,0 +1,11 @@
+/Library
+/Logs
+/UserSettings
+/Build
+/Temp
+/.plastic
+/obj
+/.vs
+/Packages
+
+.DS_Store
