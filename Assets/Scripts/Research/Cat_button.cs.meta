@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Scripts/Research/Cat_button.cs.meta
+guid: bf4aae9bb755d4357a987c3748c755ba
+========
+guid: af65edf4fdda662489bc12fa09cf4501
+>>>>>>>> test2:Assets/Levels.cs.meta
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
