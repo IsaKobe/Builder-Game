@@ -236,7 +236,7 @@ public static class MyRes
     {
         JobQueue jQ = GameObject.FindWithTag("Humans").GetComponent<JobQueue>();
         Resource diff = building.GetDiff(human.inventory);
-        List<StorageObject> stores = jQ.chunks.Union(jQ.pickupNeeded.Union(jQ.storages)).ToList();
+        List<StorageObject> stores = MyGrid.chunks.Union(jQ.pickupNeeded.Union(jQ.storages)).ToList();
         if (stores.Count > 0)
         {
             List<ClickableObject> filtered = ResCmp(diff, stores, true, human.inventory.capacity - human.inventory.ammount.Sum());

@@ -216,7 +216,6 @@ public class Building : StorageObject
         (clickable as BSave).build = build;
         (clickable as BSave).prefabName = name;
         (clickable as BSave).rotationY = transform.rotation.eulerAngles.y;
-        (clickable as BSave).gridPos = new(transform.position.x, transform.position.z); // used for not rounded values
         return base.Save(clickable);
     }
 
@@ -224,11 +223,19 @@ public class Building : StorageObject
     {
         name = (save as BSave).prefabName;
         build = (save as BSave).build;
-        gameObject.layer = 10;
-        if(build.constructed)
+        if (build.constructed)
+        {
+            gameObject.layer = 10;
             GetComponent<SortingGroup>().sortingLayerName = "Buildings";
+            if (build.deconstructing)
+            {
+                GameObject.Find("Humans").GetComponent<JobQueue>().AddJob(JobState.Deconstructing, this);
+            }
+        }
         else
-            GetComponent<SortingGroup>().sortingLayerName = "Blueprints";
+        {
+            PlaceBuilding(MyGrid.gridTiles);
+        }
         GetComponent<Building>().ChangeColor(new Color());
         base.Load(save);
     }

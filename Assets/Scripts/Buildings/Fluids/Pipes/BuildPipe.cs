@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 public class BuildPipe : Pipe
 {
     public Building connectedBuilding;
+    bool pipesSaved = false;
     public void FillData(Pipe p, Building _connectedBuild)
     {
         network = p.network;
@@ -45,8 +46,12 @@ public class BuildPipe : Pipe
     }
     public override void PlacePipe()
     {
-        base.PlacePipe();
         transform.rotation = Quaternion.Euler(Vector3.zero);
+        base.PlacePipe();
         connectedBuilding = transform.parent.parent.GetComponent<Building>();
+    }
+    public override void Load(ClickableObjectSave save)
+    {
+        base.Load(save);
     }
 }

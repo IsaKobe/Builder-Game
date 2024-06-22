@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.UI;
 using TMPro;
+using System.Data;
 
 public class ProductionBuilding : AssignBuilding
 {
@@ -72,6 +73,11 @@ public class ProductionBuilding : AssignBuilding
         else
             MyRes.ManageRes(c.localRes.stored, pRes.inputResource.stored, 1);
         return c;
+    }
+    public override void TryLink(Human h)
+    {
+        pRes.inputResource.LinkHuman(h);
+        base.TryLink(h);
     }
     public virtual void Work(Human h)
     {
@@ -210,13 +216,21 @@ public class ProductionBuilding : AssignBuilding
         pRes.inputResource = new((save as ProductionBSave).inputRes);
         pTime = (save as ProductionBSave).pTime;
         pStates = (save as ProductionBSave).pStates;
+        if(pStates.supply && pStates.supplied == false)
+        {
+            GameObject.Find("Humans").GetComponent<JobQueue>().AddJob(JobState.Supply, this);
+        }
+        if(build.constructed && GetDiff(new()).ammount.Sum() > 0)
+        {
+            GameObject.Find("Humans").GetComponent<JobQueue>().AddJob(JobState.Pickup, this);
+        }
         RefreshStatus();
         base.Load(save);
     }
     ///////////////////////////////////////////////////
     //-----------------Player Info-------------------//
     ///////////////////////////////////////////////////
-    protected void RefreshStatus()
+    public void RefreshStatus()
     {
         transform.GetChild(1).GetChild(0).gameObject.SetActive(pStates.stoped);
         transform.GetChild(1).GetChild(1).gameObject.SetActive(!pStates.supplied);
@@ -274,6 +288,7 @@ public class ProductionBuilding : AssignBuilding
             OpenWindow();
             if (MyRes.DiffRes(pRes.productionCost, pRes.inputResource.stored, new()).ammount.Sum() == 0)
             {
+                h.transform.parent.parent.GetComponent<JobQueue>().CancelJob(JobState.Supply, this);
                 pStates.supplied = true;
                 RefreshStatus();
             }

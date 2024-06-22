@@ -247,11 +247,48 @@ public class Pipe : Building
     }
     public virtual void PlacePipe()
     {
-        UniqueID();
+        if(id == -1)
+            UniqueID();
         GridPos pos = new(transform.position);
         MyGrid.pipeGrid[(int)pos.x, (int)pos.z] = this;
         MyGrid.CanPlace(this);
         if (build.constructed)
             FinishBuild();
+    }
+    public override ClickableObjectSave Save(ClickableObjectSave clickable = null)
+    {
+        // if constructed or ordered to be deconstructed save all data
+        if(!build.constructed || build.deconstructing)
+        {
+            if (clickable == null)
+                clickable = new PipeBSave();
+            (clickable as PipeBSave).networkID = network.networkID;
+            return base.Save(clickable);
+        }
+        else
+        {
+            // else save only id of pipe and id of network
+            if (clickable == null)
+                clickable = new LightWeightPipeBSave();
+            (clickable as LightWeightPipeBSave).networkID = network.networkID;
+            clickable.id = id;
+            return clickable;
+        }
+    }
+    public override void Load(ClickableObjectSave save)
+    {
+        if(save is PipeBSave)
+        {
+            network.networkID = (save as PipeBSave).networkID;
+            base.Load(save);
+        }
+        else
+        {
+            build = new();
+            build.constructed = true;
+            id = save.id;
+            network.networkID = (save as LightWeightPipeBSave).networkID;
+        }
+        PlacePipe();
     }
 }

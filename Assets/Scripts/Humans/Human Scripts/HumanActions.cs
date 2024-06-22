@@ -195,7 +195,7 @@ public static class HumanActions
                 if (MyRes.globalStorageSpace == 0)
                     return true;
                 IEnumerable<ClickableObject> chunks;
-                if ((chunks = jobQueue.chunks.Where(q => q.localRes.Future(false).ammount.Sum() > 0).Cast<ClickableObject>()).Count() > 0)
+                if ((chunks = MyGrid.chunks.Where(q => q.localRes.Future(false).ammount.Sum() > 0).Cast<ClickableObject>()).Count() > 0)
                 {
                     if (FindInterests(chunks, h, JobState.Pickup))
                     {

@@ -153,7 +153,6 @@ MonoBehaviour:
     type: 00000000
     ammount: 03000000
   integrity: 3
-  oreName: 
   assigned: {fileID: 0}
   toBeDug: 0
-  assetPath: Tiles/Road
+  assetPath: Tile/Road

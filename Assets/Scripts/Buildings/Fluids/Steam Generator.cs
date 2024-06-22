@@ -148,4 +148,20 @@ public class SteamGenerator : ProductionBuilding
         t.GetChild(3).GetComponent<TMP_Text>()
             .text = $"Steam: {networkAccess.fluid.ammount[1]}/{networkAccess.fluid.capacity[1]}";
     }
+
+    public override ClickableObjectSave Save(ClickableObjectSave clickable = null)
+    {
+
+        if (clickable == null)
+            clickable = new FluidProdBSave();
+        (clickable as FluidProdBSave).fluidSave = networkAccess.SaveFluidData(transform.GetChild(2));
+        return base.Save(clickable);
+    }
+    public override void Load(ClickableObjectSave save)
+    {
+
+        networkAccess.fluid = (save as FluidProdBSave).fluidSave.fluid;
+        networkAccess.Load(transform.GetChild(2), (save as FluidProdBSave).fluidSave.pipeSaves);
+        base.Load(save);
+    }
 }

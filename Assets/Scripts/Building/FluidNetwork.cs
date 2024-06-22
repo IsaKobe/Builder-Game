@@ -10,6 +10,7 @@ public class FluidNetwork
     public List<Pipe> pipes = new();
     public List<Building> buildings = new();
     public int networkID = -1;
+    public string networkName;
 
     public FluidNetwork()
     {

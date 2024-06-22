@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 
 public class WorkerAssign : MonoBehaviour
 {
-    [SerializeField] GameObject addPrefab;
-    [SerializeField] GameObject removePrefab;
+    [SerializeField] GameObject buttonPrefab;
     GameObject humans;
     public AssignBuilding _building;
 
@@ -33,9 +32,9 @@ public class WorkerAssign : MonoBehaviour
             humen.RemoveAll(q => _build.assigned.Contains(q) || q.home != null);
         }
         // create buttons for assigned humans
-        Fill(ContentWorkers, _build.assigned, removePrefab);
+        Fill(ContentWorkers, _build.assigned, buttonPrefab);
         // create buttons for unassigned humans
-        Fill(ContentAssign, humen, addPrefab);
+        Fill(ContentAssign, humen, buttonPrefab);
         gameObject.SetActive(true);
     }
 
@@ -82,8 +81,9 @@ public class WorkerAssign : MonoBehaviour
             Destroy(listView.GetChild(rendered.IndexOf(name)).gameObject);
         }
     } // filling the table with human elements
-    public void ManageHuman(int id, bool add) //adding or removing humans
+    public void ManageHuman(int id) //adding or removing humans
     {
+        bool add = _building.assigned.FindIndex(q => q.id == id) == -1;
         if (add && _building.limit <=  _building.assigned.Count)
         {
             print("no space");
@@ -91,7 +91,7 @@ public class WorkerAssign : MonoBehaviour
         }
         if (_building.GetComponent<ProductionBuilding>())
         {
-            if (add)
+            if(add)
             {
                 Human human = humans.transform.GetChild(0).GetComponentsInChildren<Human>().Single(q => q.id == id);
                 _building.assigned.Add(human);

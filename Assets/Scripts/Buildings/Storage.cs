@@ -28,8 +28,10 @@ public class Storage : Building
     }
     public override void Load(ClickableObjectSave save)
     {
-        canStore = (save as StorageBSave).canStore;
         base.Load(save);
+        canStore = (save as StorageBSave).canStore;
+        if (build.constructed)
+            GameObject.Find("Humans").GetComponent<JobQueue>().storages.Add(this);
     }
 
     ///////////////////////////////////////////////////

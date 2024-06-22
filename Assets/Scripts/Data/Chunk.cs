@@ -30,7 +30,6 @@ public class Chunk : StorageObject
             int ammountStored = localRes.stored.ammount.Sum();
             if (ammountStored == 0)
             {
-
                 transform.parent.parent.parent.parent.GetComponent<GridTiles>().Remove(this);
                 MyGrid.chunks.Remove(this);
                 Destroy(gameObject);
@@ -83,5 +82,21 @@ public class Chunk : StorageObject
                     = $"Human: {string.Join(",", localRes.carriers.Select(q => q.name))} \nResources: {MyRes.GetDisplayText(localRes.stored)}";
         }
         return null;
+    }
+    public override ClickableObjectSave Save(ClickableObjectSave clickable = null)
+    {
+        if (clickable == null)
+            clickable = new ChunkSave();
+        if (gameObject)
+        {
+            (clickable as ChunkSave).resColor = new MyColor(transform.GetChild(1).GetComponent<MeshRenderer>().material.color);
+            return base.Save(clickable);
+        }
+        return null;
+    }
+    public override void Load(ClickableObjectSave save)
+    {
+        transform.GetChild(1).GetComponent<MeshRenderer>().material.color = (save as ChunkSave).resColor.ConvertColor();
+        base.Load(save);
     }
 }

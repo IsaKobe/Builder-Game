@@ -12,6 +12,7 @@ public class JobSave
     public JobState job;
     public List<GridPos> path;
     public int objectId;
+    public int destinationID;
     public Type objectType = null; // -1 – unassigned; 0 – nothing; 1 – building; 2 – rock; 3 – chunk
     public JobSave()
     {
@@ -28,7 +29,6 @@ public class JobSave
         {
             objectId = -1;
         }
-        
     }
 }
 ////////////////////////////////////////////////////////////
@@ -39,10 +39,10 @@ public class GridSave
 {
     public int width;
     public int height;
-    public List<int> toBeDug;
     public List<BSave> buildings;
-    public List<ChunkSave> chunks;
+    public List<StorageObjectSave> chunks;
     public ClickableObjectSave[,] gridItems;
+    public ClickableObjectSave[,] pipes;
 }
 
 [Serializable]
@@ -69,6 +69,13 @@ public class WaterSave : ClickableObjectSave
 public class StorageObjectSave : ClickableObjectSave
 {
     public StorageResSave resSave;
+    public GridPos gridPos;
+}
+
+[Serializable]
+internal class ChunkSave : StorageObjectSave
+{
+    public MyColor resColor;
 }
 [Serializable]
 public class BSave : StorageObjectSave
@@ -76,7 +83,6 @@ public class BSave : StorageObjectSave
     public Build build;
     public string prefabName;
     public float rotationY;
-    public GridPos gridPos;
 }
 
 [Serializable]
@@ -99,46 +105,36 @@ public class ProductionBSave : AssignBSave
     public StorageResSave inputRes;
     public ProductionTime pTime;
     public ProductionStates pStates;
-    public ProductionBSave() { }
 }
-//////////////////////////////////////////////////////////////////
-//--------------------------Grid Items--------------------------//
-//////////////////////////////////////////////////////////////////
-/*
-[Serializable]
-public class GridItemSave
-{
-    public GridPos gridPos;
-    public int itemId;
-    public int type;
-    public GridItemSave(int x, int z, GridItem _gridItem)
-    {
-        gridPos = new(x, z);
-        gridItem = _gridItem;
-    }
-}*/
-[Serializable]
-public class ChunkSave
-{
-    public int id;
-    public GridPos gridPos;
-    public StorageResSave localRes;
-    public int humanId;
-    public ChunkSave()
-    {
 
-    }
-    public ChunkSave(Chunk chunk)
-    {
-        id = chunk.id;
-        gridPos = new(chunk.transform.position);
-        localRes = new(chunk.localRes);
-    }
+public class PipeBSave : BSave
+{
+    public int networkID;
 }
+public class LightWeightPipeBSave : ClickableObjectSave
+{
+    public int networkID;
+}
+public class TankBSave : BSave
+{
+    public MyColor fillColor;
+    public FluidWorkSave fluidSave;
+}
+
+public class FluidProdBSave : ProductionBSave
+{
+    public FluidWorkSave fluidSave;
+}
+
+public class FluidWorkSave
+{
+    public Fluid fluid;
+    public List<ClickableObjectSave> pipeSaves;
+}
+
 //////////////////////////////////////////////////////////////////
 //-----------------------------Humans---------------------------//
 //////////////////////////////////////////////////////////////////
-
 public class HumanSave
 {
     // Data mainly for loading
@@ -157,11 +153,6 @@ public class HumanSave
     public int houseID;
     public int workplaceId;
 
-
-    public HumanSave()
-    {
-
-    }
     public HumanSave(Human h)
     {
         id = h.id;
@@ -169,12 +160,17 @@ public class HumanSave
         color = new(h.transform.GetChild(1).GetComponent<MeshRenderer>().material.color); // saves color of hat
         gridPos = new(h.transform.position);
         jobSave = new(h.jData);
+        jobSave.destinationID = h.destination?h.destination.id:-1;
         inventory = h.inventory;
         sleep = h.sleep;
         hasEaten = h.hasEaten;
         specs = h.specialization;
         houseID = h.home ? h.home.id : -1;
         workplaceId = h.workplace ? h.workplace.id : -1;
+    }
+    public HumanSave()
+    {
+
     }
 }
 [Serializable]
@@ -196,6 +192,11 @@ public class StorageResSave
     {
 
     }
+}
+[Serializable]
+public class PlayerSettings
+{
+    public List<JobState> priorities;
 }
 [Serializable]
 public class MyColor{

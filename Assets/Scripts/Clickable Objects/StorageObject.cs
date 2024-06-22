@@ -39,11 +39,16 @@ public class StorageObject : ClickableObject
     {
         localRes.AddRequest(request, h, mod);
     }
+    public virtual void TryLink(Human h)
+    {
+        localRes.LinkHuman(h);
+    }
     public override ClickableObjectSave Save(ClickableObjectSave clickable = null)
     {
         if (clickable == null)
             clickable = new StorageObjectSave();
-        (clickable as StorageObjectSave).resSave = new(localRes);
+        (clickable as StorageObjectSave).resSave = new(localRes); 
+        (clickable as StorageObjectSave).gridPos = new(transform.position.x, transform.position.z); // used for not rounded values
         return base.Save(clickable);
     }
     public override void Load(ClickableObjectSave save)

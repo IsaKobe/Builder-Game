@@ -971,7 +971,7 @@ MonoBehaviour:
     deconstructing: 0
     constructionProgress: 0
     maximalProgress: 0
-  networkAcces:
+  networkAccess:
     fluid:
       type: 00000000
       ammount: 00000000

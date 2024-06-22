@@ -19,9 +19,9 @@ public class InfoButtons : MonoBehaviour
     {
         GameObject.Find("Info Window").GetComponent<InfoWindow>().SetAssignButton(state, transform.parent);
     }
-    public void ManageWorkers(bool add) // assigns or unassigns worker
+    public void ManageWorkers() // assigns or unassigns worker
     {
-        transform.parent.parent.parent.parent.GetComponent<WorkerAssign>().ManageHuman(id, add);
+        transform.parent.parent.parent.parent.GetComponent<WorkerAssign>().ManageHuman(id);
     }
     public void ManageStorage(bool status)
     {

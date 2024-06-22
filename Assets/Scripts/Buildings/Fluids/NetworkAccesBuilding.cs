@@ -133,4 +133,24 @@ public class NetworkAccesBuilding
         }
         return null;
     }
+
+    public FluidWorkSave SaveFluidData(Transform pipeHolder)
+    {
+        FluidWorkSave workSave = new();
+        workSave.fluid = fluid;
+        workSave.pipeSaves = new();
+        foreach (BuildPipe buildPipe in pipeHolder.GetComponentsInChildren<BuildPipe>())
+        {
+            workSave.pipeSaves.Add(buildPipe.Save());
+        }
+        return workSave;
+    }
+
+    internal void Load(Transform transform, List<ClickableObjectSave> pipeSaves)
+    {
+        for(int i = 0; i < transform.childCount; i++)
+        {
+            transform.GetChild(i).GetComponent<BuildPipe>().Load(pipeSaves[i]); 
+        }
+    }
 }

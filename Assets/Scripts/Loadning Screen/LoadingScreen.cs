@@ -16,7 +16,7 @@ public class LoadingScreen : MonoBehaviour
     string folderName;
     int buildWeigth = 5;
     public GridSave gridSave;
-    public List<JobSave> jobSaves;
+    public PlayerSettings playerSettings;
     public List<HumanSave> humanSaves;
     public SceneReferences sceneReferences;
 
@@ -69,10 +69,10 @@ public class LoadingScreen : MonoBehaviour
     //-----------------------------Loading--------------------------//
     //////////////////////////////////////////////////////////////////
     
-    public void LoadSave(GridSave _gridSave, List<JobSave> _jobSaves, List<HumanSave> _humanSaves, string _folderName)
+    public void LoadSave(GridSave _gridSave, PlayerSettings _playerSettings, List<HumanSave> _humanSaves, string _folderName)
     {
         gridSave = _gridSave;
-        jobSaves = _jobSaves;
+        playerSettings = _playerSettings;
         humanSaves = _humanSaves;
         folderName = _folderName;
 
@@ -99,20 +99,20 @@ public class LoadingScreen : MonoBehaviour
         sceneReferences = GameObject.Find("Scene").GetComponent<SceneReferences>();
         Slider slider = transform.GetChild(0).GetChild(1).GetComponent<Slider>();
         // create Progress val for loading slider
-        int maxProgress = gridSave.width * gridSave.height*2;
+        int maxProgress = gridSave.width * gridSave.height*4; // Tiles and pipes
         maxProgress += gridSave.buildings.Count * buildWeigth; //scale number
-        /*maxProgress += gridSave.chunks.Count;
-        maxProgress += jobSaves.Count;
+        maxProgress += gridSave.chunks.Count;
+        /*maxProgress += jobSaves.Count;
         maxProgress += humanSaves.Count;*/
         slider.maxValue = maxProgress;
         Progress<int> progress = new Progress<int>(value =>
         {
             slider.value = value;
         });
+        FillPlayerSettings(progress);
         FillGrid(progress);
-        /*FillJobs(progress);
         FillHumans(progress);
-        //...*/
+        //...
         StartCoroutine(LoadWaiting());
     }
     IEnumerator LoadWaiting()
@@ -121,17 +121,9 @@ public class LoadingScreen : MonoBehaviour
         MyGrid.gridTiles = sceneReferences.eventSystem.GetChild(0).GetComponent<GridTiles>();
         AfterLoad(false);
     }
-    void FillJobs(IProgress<int> progress)
+    void FillPlayerSettings(IProgress<int> progress)
     {
-        JobQueue jobQueue = sceneReferences.humans.GetComponent<JobQueue>();
-        GridTiles gridTiles = sceneReferences.GetComponentInChildren<GridTiles>();
-        foreach (JobSave jobS in jobSaves)
-        {
-            JobData jobData = new(jobS);
-            
-            jobQueue.AddJob(jobData.job, jobData.interest);
-            progress.Report(progressGlobal++);
-        }
+        sceneReferences.humans.GetComponent<JobQueue>().priority = playerSettings.priorities;
     }
     //////////////////////////////////////////////////////////////////
     //-----------------------------Grid-----------------------------//
@@ -139,63 +131,25 @@ public class LoadingScreen : MonoBehaviour
     void FillGrid(IProgress<int> progress)
     {
         CreateGrid(progress);
-        /*CreateChunks(progress);
-        CreateBuilding(progress);*/
+        CreateChunks(progress);
+        CreatePipes(progress);
+        CreateBuilding(progress);
     }
+
 
     void CreateGrid(IProgress<int> progress)
     {
         // creates new grid
         MyGrid.ClearGrid();
         MyGrid.grid = new ClickableObject[gridSave.width, gridSave.height];
+        MyGrid.pipeGrid = new Pipe[gridSave.width, gridSave.height];
+        MyGrid.fluidNetworks = new();
         
         // gets gridTiles reference for rocks
-        GridTiles gridTiles = sceneReferences.eventSystem.GetChild(0).GetComponent<GridTiles>();
-        Camera.main.GetComponent<PhysicsRaycaster>().eventMask = gridTiles.defaultMask;
+        MyGrid.gridTiles = sceneReferences.eventSystem.GetChild(0).GetComponent<GridTiles>();
+        Camera.main.GetComponent<PhysicsRaycaster>().eventMask = MyGrid.gridTiles.defaultMask;
         // process of creating items
-        
         CreateTiles(progress);
-        CreateBuilding(progress);
-        /* foreach (GridItemSave _gItem in gridSave.gridItems)
-         {
-             // assign item to grid, set pos values 
-             int x = (int)_gItem.gridPos.x;
-             int z = (int)_gItem.gridPos.z;
-             GridItem item = _gItem.gridItem;
-             gridItems[x, z] = item;
-
-             // instantiate the object if neccesary(not a building)
-             GameObject instance = null;
-             if (item is GridOre)
-             {
-                 instance = Instantiate(ores[oreNames.IndexOf((item as GridOre).oreName)],
-                     new Vector3(x, 1, z),
-                     Quaternion.identity,
-                     sceneReferences.rocks);
-                 Rock r = instance.GetComponent<Rock>();
-                 r.data = item as GridOre;
-                 if (gridSave.toBeDug.Contains(r.id))
-                 {
-                     MeshRenderer meshRenderer = r.GetComponent<MeshRenderer>();
-                     meshRenderer.material.EnableKeyword("_EMISSION");
-                     meshRenderer.material.SetColor("_EmissionColor", (Color.yellow + Color.red) / 2);
-                     gridTiles.toBeDigged.Add(r);
-                 }
-             }
-             else if (item is Road)
-             {
-                 instance = Instantiate(roadPref,
-                     new Vector3(x, 0, z),
-                     Quaternion.identity,
-                     sceneReferences.roads);
-             }
-             if (instance != null)
-             {
-                 instance.name = instance.name.Replace("(Clone)", "");
-             }
-             progress.Report(progressGlobal++);
-         }
-         MyGrid.grid = gridItems;*/
     }
     /// <summary>
     /// Instantiates and fills ClickableObject tiles (Rock, Water, Road).
@@ -218,6 +172,11 @@ public class LoadingScreen : MonoBehaviour
                         Rock rock = Instantiate(ores.First(q => q.name == (objectSave as RockSave).oreName), new(x, 1, z), Quaternion.identity, sceneReferences.rocks).GetComponent<Rock>();
                         rock.Load(objectSave);
                         MyGrid.grid[x, z] = rock;
+                        if (rock.toBeDug)
+                        {
+                            MyGrid.gridTiles.toBeDigged.Add(rock);
+                            MyGrid.gridTiles.HighLight(MyGrid.gridTiles.toBeDugColor, rock.gameObject);
+                        }
                         break;
                     case BSave:
                         MyGrid.grid[x, z] = null;
@@ -231,6 +190,36 @@ public class LoadingScreen : MonoBehaviour
                         Road road = Instantiate(roadPref, new(x, 0, z), Quaternion.identity, sceneReferences.roads).GetComponent<Road>();
                         MyGrid.grid[x, z] = road;
                         break;
+                }
+                progress.Report(progressGlobal += 2);
+            }
+        }
+        sceneReferences.humans.GetComponent<JobQueue>().toBeDug = MyGrid.gridTiles.toBeDigged.ToList();
+    }
+
+    void CreateChunks(IProgress<int> progress)
+    {
+        MyGrid.chunks = new();
+        GameObject chunkPref = Resources.Load("Chunk") as GameObject;
+        foreach (ChunkSave chunkSave in gridSave.chunks)
+        {
+            Vector3 vec = chunkSave.gridPos.ToVec();
+            MyGrid.chunks.Add(Instantiate(chunkPref, new(vec.x, 1, vec.z), Quaternion.identity, sceneReferences.chunks).GetComponent<Chunk>());
+            MyGrid.chunks[^1].Load(chunkSave);
+        }
+    }
+
+    void CreatePipes(IProgress<int> progress)
+    {
+        GameObject pipePref = Resources.Load("Buildings/Water & Steam/Pipe/Fluid Pipe base") as GameObject;
+        for (int x = 0; x < gridSave.height; x++)
+        {
+            for (int z = 0; z < gridSave.width; z++)
+            {
+                if (gridSave.pipes[x,z] != null)
+                {
+                    Instantiate(pipePref, new(x, 1.6f, z), Quaternion.identity, sceneReferences.pipes)
+                        .GetComponent<Pipe>().Load(gridSave.pipes[x, z]);
                 }
                 progress.Report(progressGlobal += 2);
             }
@@ -259,26 +248,13 @@ public class LoadingScreen : MonoBehaviour
             progress.Report(progressGlobal += buildWeigth);
         }
     }
-    void CreateChunks(IProgress<int> progress)
-    {
-        /* MyGrid.chunks = new();
-         GameObject chunkPref = Resources.Load("Chunk") as GameObject;
-         List<Human> humans = GameObject.FindWithTag("Humans").transform.GetComponentsInChildren<Human>().ToList();
-         foreach(ChunkSave chunkSave in gridSave.chunks)
-         {
-             Vector3 vec = chunkSave.gridPos.ToVec();
-             MyGrid.chunks.Add(Instantiate(chunkPref, new(vec.x, 1, vec.z), chunkPref.transform.rotation, sceneReferences.chunks).GetComponent<Chunk>());
-             MyGrid.chunks[^1].localRes = new(chunkSave.localRes, humans);
-             MyGrid.chunks[^1].id = chunkSave.id;
-         }   */
-    }
     
     //////////////////////////////////////////////////////////////////
     //-----------------------------Humans---------------------------//
     //////////////////////////////////////////////////////////////////
     void FillHumans(IProgress<int> progress)
     {
-        GameObject humanPrefab = Resources.Load("Humans/Capsule") as GameObject;
+        GameObject humanPrefab = Resources.Load("Humans/Worker") as GameObject;
         Humans humans = sceneReferences.humans.GetComponent<Humans>();
         JobQueue jobQueue = humans.GetComponent<JobQueue>();
         humans.humen = new();
@@ -289,19 +265,18 @@ public class LoadingScreen : MonoBehaviour
                 new Vector3(h.gridPos.x, 1, h.gridPos.z), 
                 Quaternion.identity,
                 sceneReferences.humans.GetChild(parent)).GetComponent<Human>();
-            human.GetComponent<MeshRenderer>().material.color = h.color.ConvertColor();
+            human.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = h.color.ConvertColor();
             human.id = h.id;
+            human.jData = new(h.jobSave, human);
             human.name = h.name;
             human.inventory = h.inventory;
             human.specialization = h.specs;
             human.sleep = h.sleep;
             // job assigment TODO
-            /*human.jData = jobQueue._jobs.SingleOrDefault(q => q.ID == h.jobSave.id);
-            if(human.jData == null)
-            {
-                human.jData = new(h.jobSave);
-            }
-            human.jData.human = human;*/
+            if (human.jData.path.Count > 0)
+                human.ChangeAction(HumanActions.Move);
+            else
+                human.Decide();
             // house assigment
             if (h.houseID != -1)
             {

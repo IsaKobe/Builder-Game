@@ -61,7 +61,7 @@ public class Rock : ClickableObject
         (clickable as RockSave).integrity = integrity;
         (clickable as RockSave).oreName = name;
         (clickable as RockSave).toBeDug = toBeDug;
-        return clickable;
+        return base.Save(clickable);
     }
 
     public override void Load(ClickableObjectSave save)

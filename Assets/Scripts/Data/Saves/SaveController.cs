@@ -4,6 +4,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
 using System.Linq;
+using System;
 
 public class SaveController : MonoBehaviour
 {
@@ -20,21 +21,9 @@ public class SaveController : MonoBehaviour
         if (Directory.GetDirectories($"{Application.persistentDataPath}/saves").FirstOrDefault(q => LoadMenu.GetSaveName(q) == activeFolder) == null)
             Directory.CreateDirectory($"{Application.persistentDataPath}/saves/{activeFolder}");
 
-        SaveJobs();
         SaveGrid();
         SaveHumans();
-    }
-    void SaveJobs()
-    {
-        /*List<JobData> jD = null;//GameObject.Find("Humans").GetComponent<JobQueue>()._jobs;
-        List<JobSave> _jobs = new();
-        foreach (JobData _jD in jD)
-        {
-            _jobs.Add(new(_jD));
-        }
-        JsonTextWriter jsonTextWriter = new(new StreamWriter($"{Application.persistentDataPath}/saves/{activeFolder}/Jobs.json"));
-        PrepSerializer().Serialize(jsonTextWriter, _jobs);
-        jsonTextWriter.Close();*/
+        SavePlayerSettings();
     }
     void SaveGrid()
     {
@@ -48,42 +37,36 @@ public class SaveController : MonoBehaviour
             {
                 for (int z = 0; z < MyGrid.width; z++)
                 {
-                    gridSave.gridItems[x, z] = MyGrid.grid[x, z].Save();
+                    if(MyGrid.grid[x, z].GetType() != typeof(Building))
+                        gridSave.gridItems[x, z] = MyGrid.grid[x, z].Save();
                 }
             }
             SaveBuildings(gridSave);
+            SaveChunks(gridSave);
             JsonTextWriter jsonTextWriter = new(new StreamWriter($"{Application.persistentDataPath}/saves/{activeFolder}/Grid.json"));
             PrepSerializer().Serialize(jsonTextWriter, gridSave);
             jsonTextWriter.Close();
         }
-        /*gridSave.toBeDug = GameObject.Find("Grid").GetComponent<GridTiles>().toBeDigged.Select(q => q.id).ToList();
-        SaveChunks(gridSave);
-        
-        if(MyGrid.grid != null)
-        {
-            for (int x = 0; x < MyGrid.height; x++)
-            {
-                for (int z = 0; z < MyGrid.width; z++)
-                {
-                    if (MyGrid.grid[x, z] != null)
-                    {
-                        //gridSave.gridItems.Add(new(x, z, MyGrid.grid[x, z]));
-                    }
-                }
-            }
-            JsonTextWriter jsonTextWriter = new(new StreamWriter($"{Application.persistentDataPath}/saves/{activeFolder}/Grid.json"));
-            PrepSerializer().Serialize(jsonTextWriter, gridSave);
-            jsonTextWriter.Close();
-        }*/
     }
     void SaveBuildings(GridSave gridSave)
     {
+        SavePipes(gridSave);
         gridSave.buildings = new();
         foreach (Building building in MyGrid.buildings)
         {
-            BSave clickable = building.Save(null) as BSave;
+            BSave clickable = building.Save() as BSave;
             if (clickable != null)
                 gridSave.buildings.Add(clickable);
+        }
+    }
+
+    void SavePipes(GridSave gridSave)
+    {
+        gridSave.pipes = new ClickableObjectSave[gridSave.height, gridSave.width];
+        foreach(Pipe pipe in GameObject.Find("Pipes").GetComponentsInChildren<Pipe>())
+        {
+            GridPos pos = new(pipe.gameObject);
+            gridSave.pipes[(int)pos.x, (int)pos.z] = pipe.Save();
         }
     }
     void SaveChunks(GridSave gridSave)
@@ -91,8 +74,17 @@ public class SaveController : MonoBehaviour
         gridSave.chunks = new();
         foreach(Chunk chunk in MyGrid.chunks)
         {
-            gridSave.chunks.Add(new(chunk));
+            gridSave.chunks.Add(chunk.Save() as StorageObjectSave);
         }
+    }
+
+    void SavePlayerSettings()
+    {
+        PlayerSettings settings = new();
+        settings.priorities = GameObject.Find("Humans").GetComponent<JobQueue>().priority;
+        JsonTextWriter jsonTextWriter = new(new StreamWriter($"{Application.persistentDataPath}/saves/{activeFolder}/PlayerSettings.json"));
+        PrepSerializer().Serialize(jsonTextWriter, settings);
+        jsonTextWriter.Close();
     }
     void SaveHumans()
     {

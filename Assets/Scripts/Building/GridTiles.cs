@@ -22,14 +22,12 @@ public class GridTiles : MonoBehaviour
     public LayerMask buildingMask;
     public LayerMask defaultMask;
     [Header("Tilemaps")]
-    public GameObject roadPrefab;
     public Building buildingPrefab;
     public SelectionMode selMode = SelectionMode.nothing;
     public GridPos activePos;
     public GridPos startPos;
     public bool drag = false;
     public bool deselect = false;
-    public List<Building> deconstructions = new();
     public List<ClickableObject> markedTiles;
     public List<Rock> toBeDigged = new();
     public Building buildBlueprint;
@@ -42,8 +40,8 @@ public class GridTiles : MonoBehaviour
     /// </summary>
     public ClickableObject activeObject; // mouse over
     public Texture2D[] cursors;
-    private Color highlight = Color.white/3; // WHITE / 3
-    private Color toBeDugColor = (Color.yellow + Color.red) / 2;
+    public Color highlight = Color.white/3; // WHITE / 3
+    public Color toBeDugColor = (Color.yellow + Color.red) / 2;
     void OnApplicationPause()
     {
         Exit(activeObject);

@@ -76,8 +76,15 @@ public static class MyGrid
     {
         foreach (Building building in objects.GetComponentsInChildren<Building>())
         {
-            if(!building.GetComponent<BuildPipe>())
+            if (!building.GetComponent<BuildPipe>())
+            {
                 PlaceBuild(building);
+                if (building.GetComponent<ProductionBuilding>() && building.build.constructed)
+                {
+                    building.GetComponent<ProductionBuilding>().RefreshStatus();
+                    building.GetComponent<ProductionBuilding>().RequestRestock();
+                }
+            }
             else
                 building.GetComponent<BuildPipe>().PlacePipe();
         }

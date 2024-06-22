@@ -158,7 +158,6 @@ MonoBehaviour:
   defaultMask:
     serializedVersion: 2
     m_Bits: 2035
-  roadPrefab: {fileID: 33366249774806201, guid: 17226517c72784d0d8862d0ed4660eae, type: 3}
   buildingPrefab: {fileID: 0}
   selMode: 0
   activePos:
@@ -171,7 +170,6 @@ MonoBehaviour:
     level: 0
   drag: 0
   deselect: 0
-  deconstructions: []
   markedTiles: []
   toBeDigged: []
   buildBlueprint: {fileID: 0}
@@ -180,6 +178,8 @@ MonoBehaviour:
   cursors:
   - {fileID: 2800000, guid: ae363da8347a847499c9345c5845bf1e, type: 3}
   - {fileID: 2800000, guid: fd2def2a77be87d4382da31006c84430, type: 3}
+  highlight: {r: 0.33333334, g: 0.33333334, b: 0.33333334, a: 0.33333334}
+  toBeDugColor: {r: 1, g: 0.46078432, b: 0.007843138, a: 1}
 --- !u!4 &1558550
 Transform:
   m_ObjectHideFlags: 0
@@ -713,6 +713,10 @@ PrefabInstance:
 
 '
       objectReference: {fileID: 0}
+    - target: {fileID: 6051528640150872862, guid: 86fe5593abcfa6949b5da7820b01883a, type: 3}
+      propertyPath: buttonPrefab
+      value: 
+      objectReference: {fileID: 2699729629505326116, guid: c51245aee4f7b9745a02e6990feabf9b, type: 3}
     - target: {fileID: 6265563851057161830, guid: 86fe5593abcfa6949b5da7820b01883a, type: 3}
       propertyPath: buildPrefab
       value: 
@@ -733,6 +737,7 @@ PrefabInstance:
     - {fileID: 5803255924860393730, guid: 86fe5593abcfa6949b5da7820b01883a, type: 3}
     m_RemovedGameObjects:
     - {fileID: 6745361221092109468, guid: 86fe5593abcfa6949b5da7820b01883a, type: 3}
+    - {fileID: 7570813360899755019, guid: 86fe5593abcfa6949b5da7820b01883a, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 8262661684204872988, guid: 86fe5593abcfa6949b5da7820b01883a, type: 3}
       insertIndex: 2

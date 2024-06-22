@@ -14,12 +14,12 @@ public class LoadMenu : MonoBehaviour
 {
     [SerializeField] GameObject content;
     [SerializeField] GameObject itemPrefab;
-    public event Action<GridSave, List<JobSave>, List<HumanSave>, string> loadGame;
+    public event Action<GridSave, PlayerSettings, List<HumanSave>, string> loadGame;
     string selectedSave;
     List<string> loadedElems = new();
 
     GridSave gridSave;
-    List<JobSave> jobSaves;
+    PlayerSettings playerSettings;
     List<HumanSave> humanSaves;
     public void ParseSaves()
     {
@@ -66,27 +66,27 @@ public class LoadMenu : MonoBehaviour
     void SelectSave(Button button)
     {
         selectedSave = button.transform.GetChild(0).GetComponent<TMP_Text>().text;
-        JsonTextReader jsonReader = new(new StreamReader($"{Application.persistentDataPath}/saves/{selectedSave}/Grid.json"));
         JsonSerializer jsonSerializer = new();
         jsonSerializer.TypeNameHandling = TypeNameHandling.Auto;
         jsonSerializer.Formatting = Formatting.Indented;
-        // for grid
+        // for gridSave
+        JsonTextReader jsonReader = new(new StreamReader($"{Application.persistentDataPath}/saves/{selectedSave}/Grid.json"));
         gridSave = jsonSerializer.Deserialize<GridSave>(jsonReader);
         jsonReader.Close();
-        /*// for jobs
-        jsonReader = new(new StreamReader($"{Application.persistentDataPath}/saves/{selectedSave}/Jobs.json"));
-        jobSaves = jsonSerializer.Deserialize<List<JobSave>>(jsonReader);
+        // for playerSettings
+        jsonReader = new(new StreamReader($"{Application.persistentDataPath}/saves/{selectedSave}/PlayerSettings.json"));
+        playerSettings = jsonSerializer.Deserialize<PlayerSettings>(jsonReader);
         jsonReader.Close();
+        // for humanSaves
         jsonReader = new(new StreamReader($"{Application.persistentDataPath}/saves/{selectedSave}/Humans.json"));
         humanSaves = jsonSerializer.Deserialize<List<HumanSave>>(jsonReader);
-        jsonReader.Close();*/
+        jsonReader.Close();
 
-        /*transform.GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = selectedSave;
+        transform.GetChild(1).GetChild(0).GetComponent<TMP_Text>().text = selectedSave;
         transform.GetChild(1).GetChild(1).GetComponent<TMP_Text>().text = // to show that the save is really working
             $"Buildings: {gridSave.buildings.Count}\n" +
-            $"Jobs: {jobSaves.Count}\n" +
             $"Humans: {humanSaves.Count}";
-        */
+        
         transform.GetChild(3).GetChild(0).GetComponent<Button>().interactable = true; // load
         transform.GetChild(3).GetChild(2).GetComponent<Button>().interactable = true; // delete
     }
@@ -143,6 +143,6 @@ public class LoadMenu : MonoBehaviour
     public void Load(AsyncOperation ao)
     {
         
-        GameObject.Find("Loading Screen").transform.GetChild(0).GetComponent<LoadingScreen>().LoadSave(gridSave, jobSaves, humanSaves, selectedSave);
+        GameObject.Find("Loading Screen").transform.GetChild(0).GetComponent<LoadingScreen>().LoadSave(gridSave, playerSettings, humanSaves, selectedSave);
     }
 }

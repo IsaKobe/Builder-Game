@@ -14,7 +14,7 @@ public class JobQueue : MonoBehaviour
     public List<ProductionBuilding> supplyNeeded = new();   // supplying
     public List<StorageObject> pickupNeeded = new();        // supplying, pickup
     public List<Storage> storages = new();                  // supplying
-    public List<Chunk> chunks = new();              // supplying, cleanup
+    //public List<Chunk> chunks = new();              // supplying, cleanup
     [Header("Modifiable")]
     public List<JobState> priority;
 
@@ -60,9 +60,6 @@ public class JobQueue : MonoBehaviour
                 break;
             case JobState.Pickup:
                 pickupNeeded.Add(interest.GetComponent<ProductionBuilding>());
-                break;
-            case JobState.Cleanup:
-                chunks.Add(interest.GetComponent<Chunk>());
                 break;
         }
     }
